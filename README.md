@@ -28,7 +28,7 @@ To create a production build:
 ```bash
 npm run build
 ```
-
+ 
 ## Deployment
 
 This project is configured to automatically deploy to GitHub Pages when pushing to the `main` branch.
