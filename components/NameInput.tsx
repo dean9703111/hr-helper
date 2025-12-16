@@ -10,6 +10,7 @@ interface NameInputProps {
 
 export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
   const [inputText, setInputText] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Analyze duplicates
@@ -49,30 +50,24 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleClear = () => {
-    if (window.confirm('確定要清空所有名單嗎？')) {
-      setNames([]);
-    }
-  };
-
   const handleLoadDemo = () => {
     const demoData = [
-      "陳小美", "林志豪", "張雅婷", "王冠宇", "李淑芬", 
+      "陳小美", "林志豪", "張雅婷", "王冠宇", "李淑芬",
       "陳小美", // Duplicate
-      "黃柏翰", "林怡君", "陳家豪", "張婷婷", 
+      "黃柏翰", "林怡君", "陳家豪", "張婷婷",
       "王冠宇", // Duplicate
       "許志明", "蔡嘉玲", "楊宗緯", "吳建豪"
     ];
     const newNames = demoData.map(name => ({ id: generateId(), name }));
-    
+
     if (names.length > 0) {
-        if(window.confirm('是否要保留現有名單並加入範例資料？\n取消則會覆蓋現有名單。')) {
-            setNames([...names, ...newNames]);
-        } else {
-            setNames(newNames);
-        }
-    } else {
+      if (window.confirm('是否要保留現有名單並加入範例資料？\n取消則會覆蓋現有名單。')) {
+        setNames([...names, ...newNames]);
+      } else {
         setNames(newNames);
+      }
+    } else {
+      setNames(newNames);
     }
   };
 
@@ -88,7 +83,7 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+
       {/* Header Section */}
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-900">名單管理</h2>
@@ -98,7 +93,7 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
+
         {/* Input Area */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
@@ -107,7 +102,7 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
               輸入姓名
             </label>
             <div className="flex space-x-2">
-               <input
+              <input
                 type="file"
                 ref={fileInputRef}
                 accept=".csv,.txt"
@@ -131,14 +126,14 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
               </button>
             </div>
           </div>
-          
+
           <textarea
             value={inputText}
             onChange={handleTextChange}
             placeholder="王小明&#10;李大同&#10;張美麗..."
             className="flex-grow w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none bg-gray-50 text-gray-800 placeholder-gray-400 text-base min-h-[200px]"
           />
-          
+
           <button
             onClick={handleAddNames}
             disabled={!inputText.trim()}
@@ -153,33 +148,54 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center">
-                目前名單
-                {hasDuplicates && (
-                    <span className="ml-2 flex items-center text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        發現重複
-                    </span>
-                )}
+              目前名單
+              {hasDuplicates && (
+                <span className="ml-2 flex items-center text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                  <AlertTriangle className="w-3 h-3 mr-1" />
+                  發現重複
+                </span>
+              )}
             </h3>
             <div className="flex space-x-2">
-                {hasDuplicates && (
-                    <button
-                        onClick={handleRemoveDuplicates}
-                        className="text-xs text-amber-600 hover:text-amber-800 flex items-center px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 transition-colors border border-amber-200"
-                    >
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        移除重複
-                    </button>
-                )}
-                {names.length > 0 && (
+              {hasDuplicates && (
                 <button
-                    onClick={handleClear}
-                    className="text-xs text-red-500 hover:text-red-700 flex items-center px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                  onClick={handleRemoveDuplicates}
+                  className="text-xs text-amber-600 hover:text-amber-800 flex items-center px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 transition-colors border border-amber-200"
                 >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  移除重複
+                </button>
+              )}
+              {names.length > 0 && (
+                showClearConfirm ? (
+                  <div className="flex items-center space-x-2 animate-in fade-in slide-in-from-right-2 duration-200">
+                    <span className="text-xs text-red-600 font-medium">確定要清空？</span>
+                    <button
+                      onClick={() => {
+                        setNames([]);
+                        setShowClearConfirm(false);
+                      }}
+                      className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition-colors"
+                    >
+                      是
+                    </button>
+                    <button
+                      onClick={() => setShowClearConfirm(false)}
+                      className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 transition-colors"
+                    >
+                      否
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowClearConfirm(true)}
+                    className="text-xs text-red-500 hover:text-red-700 flex items-center px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                  >
                     <Trash2 className="w-3 h-3 mr-1" />
                     清空
-                </button>
-                )}
+                  </button>
+                )
+              )}
             </div>
           </div>
 
@@ -189,7 +205,7 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
                 <Database className="w-10 h-10 mb-2 opacity-30" />
                 <p>目前沒有資料</p>
                 <button onClick={handleLoadDemo} className="mt-4 text-sm text-indigo-500 hover:underline">
-                    載入範例試試看？
+                  載入範例試試看？
                 </button>
               </div>
             ) : (
@@ -197,36 +213,34 @@ export const NameInput: React.FC<NameInputProps> = ({ names, setNames }) => {
                 {names.map((person, idx) => {
                   const isDuplicate = duplicateNames.has(person.name);
                   return (
-                    <li 
-                        key={person.id} 
-                        className={`py-2 px-3 flex items-center justify-between group rounded-lg transition-colors ${
-                            isDuplicate ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-white'
+                    <li
+                      key={person.id}
+                      className={`py-2 px-3 flex items-center justify-between group rounded-lg transition-colors ${isDuplicate ? 'bg-amber-50 hover:bg-amber-100' : 'hover:bg-white'
                         }`}
                     >
-                        <span className="flex items-center">
-                        <span className={`w-6 h-6 rounded-full text-xs flex items-center justify-center mr-3 font-medium ${
-                            isDuplicate ? 'bg-amber-200 text-amber-800' : 'bg-indigo-100 text-indigo-600'
-                        }`}>
-                            {idx + 1}
+                      <span className="flex items-center">
+                        <span className={`w-6 h-6 rounded-full text-xs flex items-center justify-center mr-3 font-medium ${isDuplicate ? 'bg-amber-200 text-amber-800' : 'bg-indigo-100 text-indigo-600'
+                          }`}>
+                          {idx + 1}
                         </span>
                         <span className={`${isDuplicate ? 'text-amber-900 font-semibold' : 'text-gray-700 font-medium'}`}>
-                            {person.name}
+                          {person.name}
                         </span>
                         {isDuplicate && (
-                            <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 rounded">
-                                重複
-                            </span>
+                          <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 rounded">
+                            重複
+                          </span>
                         )}
-                        </span>
-                        <button
-                            onClick={() => {
-                                const newNames = names.filter(n => n.id !== person.id);
-                                setNames(newNames);
-                            }}
-                            className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
+                      </span>
+                      <button
+                        onClick={() => {
+                          const newNames = names.filter(n => n.id !== person.id);
+                          setNames(newNames);
+                        }}
+                        className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </li>
                   );
                 })}
